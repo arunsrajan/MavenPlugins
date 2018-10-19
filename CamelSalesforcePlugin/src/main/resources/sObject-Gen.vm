@@ -1,0 +1,27 @@
+package $packageName;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Generated;
+
+@Generated("org.apache.camel.maven.CamelSalesforceMojo")
+@XStreamAlias("$name")
+public class $name extends AbstractDescribedSObjectBase {
+		#foreach ( $field in $fields )
+			#set($fieldName = $field.getName())
+			#set($first_letter = $fieldName.substring(0,1).toLowerCase())
+			#set($the_rest = $fieldName.substring(1))
+			#set($fieldName = ${first_letter} + ${the_rest})
+			#set($setterGetter = $first_letter.toUpperCase() + ${the_rest})
+			private String $fieldName;
+			
+			public String get$setterGetter(){
+				return $field.getName();
+			}
+			public String set$setterGetter(String $fieldName){
+				this.$fieldName=$fieldName;
+			} 
+		#end
+    }
+}
