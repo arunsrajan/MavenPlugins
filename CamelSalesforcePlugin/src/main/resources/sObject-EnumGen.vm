@@ -10,12 +10,12 @@ import org.codehaus.jackson.annotate.JsonValue;
 public enum $className {
 		#if($pickListValues)
 			#foreach ( $pickListValue in $pickListValues )
-				#set($fieldName = $pickListValue.getValue().replaceAll(" ","_").replaceAll("[^A-Za-z0-9]","_"))
+				#set($fieldName = $pickListValue.replaceAll(" ","_").replaceAll("[^A-Za-z0-9]","_"))
 				#set($fieldName = $fieldName.toUpperCase())
 				#if($foreach.count < $size)
-					_$fieldName ("$pickListValue.getValue()"),
+					_$fieldName ("$pickListValue"),
 				#else
-					_$fieldName ("$pickListValue.getValue()");				
+					_$fieldName ("$pickListValue");				
 				#end
 			#end
 		#end
