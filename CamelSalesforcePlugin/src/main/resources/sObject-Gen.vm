@@ -1,5 +1,6 @@
 package $packageName;
 
+import javax.annotation.Generated;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,22 +12,28 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 @Generated("org.apache.camel.maven.CamelSalesforceMojo")
 @XStreamAlias("$name")
-public class $name extends AbstractDescribedSObjectBase {
+public class $name extends AbstractSObjectBase {
 		#foreach ( $field in $fields )
 			#set($fieldName = $field.getName())
 			#set($first_letter = $fieldName.substring(0,1).toLowerCase())
 			#set($the_rest = $fieldName.substring(1))
 			#set($fieldName = ${first_letter} + ${the_rest})
 			#set($setterGetter = $first_letter.toUpperCase() + ${the_rest})
-			#if( $field.getType() == "double" )
+			#if($setterGetter == "LastActivityDate")
+				#set($type = "java.lang.String")
+			#elseif( $field.getType() == "double" )
 				#set($type = "java.lang.Double")
+			#elseif( $field.getType() == "datetime" )
+				#set($type = "org.joda.time.DateTime")
+			#elseif( $field.getType() == "date" )
+				#set($type = "java.time.ZonedDateTime")
 			#elseif($field.getType() == "string" || $field.getType() == "textarea")
 				#set($type = "java.lang.String")
 			#elseif($field.getType() == "picklist")
 				#if ($setterGetter.endsWith("__c"))
-					#set($type = $setterGetter.replace("__c","")+"CustomEnum")
+					#set($type = $objectName+"_"+$setterGetter.replace("__c","")+"CustomEnum")
 				#else
-					#set($type = $setterGetter+"Enum")
+					#set($type = $objectName+"_"+$setterGetter+"Enum")
 				#end
 			#else
 				#set($type = "java.lang.String")
@@ -50,5 +57,4 @@ public class $name extends AbstractDescribedSObjectBase {
 				this.$fieldName=$fieldName;
 			} 
 		#end
-    }
 }

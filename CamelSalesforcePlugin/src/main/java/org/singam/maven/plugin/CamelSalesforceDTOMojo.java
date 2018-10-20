@@ -44,7 +44,7 @@ public class CamelSalesforceDTOMojo
     /**
      * Location of the file.
      */
-    @Parameter( defaultValue = "${project.build.directory}", property = "outputDir", required = true )
+    @Parameter( defaultValue = "${project.basedir}/src/main/java", required = true )
     private File outputDirectory;
 
     @Parameter(required = true)
@@ -104,7 +104,7 @@ public class CamelSalesforceDTOMojo
     	outputDirectory.mkdirs();
     	File javaPackagePath = new File(outputDirectory.getAbsolutePath()+"/"+javaPackage.replace(".", "/"));
     	javaPackagePath.mkdirs();
-    	
+    	deleteFiles(javaPackagePath);
     	try
     	{
     		VelocityEngine velocityEngine = new VelocityEngine();
@@ -112,12 +112,14 @@ public class CamelSalesforceDTOMojo
     		velocityEngine.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
     		final Template template = velocityEngine.getTemplate("/sObject-Gen.vm");
     		final Template enumTemplate = velocityEngine.getTemplate("/sObject-EnumGen.vm");
-    		StringWriter sw = new StringWriter();
+    		
       		sObjects.stream().forEach(sObject->{
   	    	VelocityContext context = new VelocityContext();
   	    	context.put( "name", sObject.getName() );
   	    	context.put("fields",sObject.getFields());
   	    	context.put("packageName",javaPackage);
+  	    	context.put("objectName",sObject.getName());
+  	    	StringWriter sw = new StringWriter();
   	    	template.merge( context, sw );
   	    	try {
 				FileOutputStream fout = new FileOutputStream(new File(javaPackagePath.getAbsolutePath()+"/"+sObject.getName()+".java"));
@@ -126,24 +128,27 @@ public class CamelSalesforceDTOMojo
 				if(sObject.getFields()!=null) {
 					List<Fields> fields = Arrays.asList(sObject.getFields());
 					fields.stream().filter(field->field.getType().equals("picklist")).forEach(field->{
-						try {
-							VelocityContext velCtx = new VelocityContext();
-							velCtx.put( "name", field.getName() );
-							velCtx.put("pickListValues",field.getPicklistValues());
-							velCtx.put("packageName",javaPackage);
-							long size = field.getPicklistValues().length;
-							velCtx.put("size",size);
-							StringWriter enumFileGenerator = new StringWriter();
-							enumTemplate.merge(velCtx, enumFileGenerator);
-							String name=field.getName();
-							name = name.endsWith("__c")?name.replace("__c", "")+"Custom":name;
-							FileOutputStream enumFile = new FileOutputStream(new File(javaPackagePath.getAbsolutePath()+"/"+name+"Enum.java"));
-							enumFile.write(enumFileGenerator.getBuffer().toString().getBytes());
-							enumFile.close();
-						}
-						catch(Exception ex) {
-							ex.printStackTrace();
-						}
+							try {
+								VelocityContext velCtx = new VelocityContext();
+								velCtx.put( "name", field.getName() );
+								velCtx.put("pickListValues",field.getPicklistValues());
+								velCtx.put("packageName",javaPackage);
+								String objectName = sObject.getName();
+								objectName=objectName.substring(0,1).toUpperCase()+objectName.substring(1);
+								velCtx.put("objectName",objectName);
+								long size = field.getPicklistValues().length;
+								velCtx.put("size",size);
+								StringWriter enumFileGenerator = new StringWriter();
+								enumTemplate.merge(velCtx, enumFileGenerator);
+								String name=field.getName();
+								name = name.endsWith("__c")?name.replace("__c", "")+"Custom":name;
+								FileOutputStream enumFile = new FileOutputStream(new File(javaPackagePath.getAbsolutePath()+"/"+objectName+"_"+name+"Enum.java"));
+								enumFile.write(enumFileGenerator.getBuffer().toString().getBytes());
+								enumFile.close();
+							}
+							catch(Exception ex) {
+								ex.printStackTrace();
+							}
 					});
 				}
 			} catch (Exception e) {
@@ -168,6 +173,14 @@ public class CamelSalesforceDTOMojo
     	{}
 
     	
+    }
+    
+    protected void deleteFiles(File dir) {
+    	for(File file: dir.listFiles()) {
+    	    if (!file.isDirectory()) { 
+    	        file.delete();
+    	    }
+    	}
     }
     
     protected String login() {
@@ -209,7 +222,7 @@ public class CamelSalesforceDTOMojo
 				JSONObject authResponse = new JSONObject(
 						new JSONTokener(new InputStreamReader(get.getResponseBodyAsStream())));
 				ObjectMapper objMapper = new ObjectMapper();
-				SalesforceObjectMetadata sObject=objMapper.readValue(authResponse.toString(), SalesforceObjectMetadata.class);
+				SalesforceObjectMetadata sObject=(SalesforceObjectMetadata) objMapper.readValue(authResponse.toString(), SalesforceObjectMetadata.class);
 				salesforceObjects.add(sObject);
     		}
     	}
