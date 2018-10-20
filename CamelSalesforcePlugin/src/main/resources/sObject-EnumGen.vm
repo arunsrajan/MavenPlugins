@@ -1,0 +1,40 @@
+package $packageName;
+
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonValue;
+#if ($name.endsWith("__c"))
+#set($className = $name.replace("__c","")+"CustomEnum")
+#else
+#set($className = $name+"Enum")
+#end
+public enum $className {
+		#foreach ( $pickListValue in $pickListValues )
+			#set($fieldName = $pickListValue.getValue().replace(".","_"))
+			#set($fieldName = $fieldName.toUpperCase())
+			#if($foreach.count < $size)
+				$fieldName ("$pickListValue.getValue()"),
+			#else
+				$fieldName ("$pickListValue.getValue()");				
+			#end
+		#end
+		final String value;
+
+	    private $className(String value) {
+	        this.value = value;
+	    }
+	
+	    @JsonValue
+	    public String value() {
+	        return this.value;
+	    }
+	    @JsonCreator
+    	public static $className fromValue(String value) {
+        for ($className e : $className .values()) {
+            if (e.value.equals(value)) {
+                return e;
+            }
+        }
+        throw new IllegalArgumentException(value);
+    }
+    }
+}
