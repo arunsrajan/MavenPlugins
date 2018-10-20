@@ -1,129 +1,163 @@
 package org.singam.maven.plugin;
 
+public class Urls {
+	private String layout;
+	private String layouts;
+	private String compactLayouts;
+	private String rowTemplate;
+	private String approvalLayouts;
+	private String uiDetailTemplate;
+	private String uiEditTemplate;
+	private String listviews;
+	private String describe;
+	private String uiNewRecord;
+	private String caseRowArticleSuggestions;
+	private String quickActions;
+	private String caseArticleSuggestions;
+	private String push;
+	private String namedLayouts;
+	private String passwordUtilities;
 
-public class Urls
-{
-private String layout;
+	public String getPasswordUtilities() {
+		return passwordUtilities;
+	}
 
-private String layouts;
+	public void setPasswordUtilities(String passwordUtilities) {
+		this.passwordUtilities = passwordUtilities;
+	}
 
-private String compactLayouts;
+	public String getNamedLayouts() {
+		return namedLayouts;
+	}
 
-private String rowTemplate;
-private String approvalLayouts;
-private String uiDetailTemplate;
-private String uiEditTemplate;
-private String listviews;
-private String describe;
-private String uiNewRecord;
+	public void setNamedLayouts(String namedLayouts) {
+		this.namedLayouts = namedLayouts;
+	}
 
-private String quickActions;
+	public String getPush() {
+		return push;
+	}
 
-public String getQuickActions() {
-	return quickActions;
-}
+	public void setPush(String push) {
+		this.push = push;
+	}
 
-public void setQuickActions(String quickActions) {
-	this.quickActions = quickActions;
-}
+	public String getCaseRowArticleSuggestions() {
+		return caseRowArticleSuggestions;
+	}
 
-public String getLayouts() {
-	return layouts;
-}
+	public void setCaseRowArticleSuggestions(String caseRowArticleSuggestions) {
+		this.caseRowArticleSuggestions = caseRowArticleSuggestions;
+	}
 
-public void setLayouts(String layouts) {
-	this.layouts = layouts;
-}
+	public String getCaseArticleSuggestions() {
+		return caseArticleSuggestions;
+	}
 
-public String getRowTemplate() {
-	return rowTemplate;
-}
+	public void setCaseArticleSuggestions(String caseArticleSuggestions) {
+		this.caseArticleSuggestions = caseArticleSuggestions;
+	}
 
-public void setRowTemplate(String rowTemplate) {
-	this.rowTemplate = rowTemplate;
-}
+	public String getQuickActions() {
+		return quickActions;
+	}
 
-public String getApprovalLayouts() {
-	return approvalLayouts;
-}
+	public void setQuickActions(String quickActions) {
+		this.quickActions = quickActions;
+	}
 
-public void setApprovalLayouts(String approvalLayouts) {
-	this.approvalLayouts = approvalLayouts;
-}
+	public String getLayouts() {
+		return layouts;
+	}
 
-public String getUiDetailTemplate() {
-	return uiDetailTemplate;
-}
+	public void setLayouts(String layouts) {
+		this.layouts = layouts;
+	}
 
-public void setUiDetailTemplate(String uiDetailTemplate) {
-	this.uiDetailTemplate = uiDetailTemplate;
-}
+	public String getRowTemplate() {
+		return rowTemplate;
+	}
 
-public String getUiEditTemplate() {
-	return uiEditTemplate;
-}
+	public void setRowTemplate(String rowTemplate) {
+		this.rowTemplate = rowTemplate;
+	}
 
-public void setUiEditTemplate(String uiEditTemplate) {
-	this.uiEditTemplate = uiEditTemplate;
-}
+	public String getApprovalLayouts() {
+		return approvalLayouts;
+	}
 
-public String getListviews() {
-	return listviews;
-}
+	public void setApprovalLayouts(String approvalLayouts) {
+		this.approvalLayouts = approvalLayouts;
+	}
 
-public void setListviews(String listviews) {
-	this.listviews = listviews;
-}
+	public String getUiDetailTemplate() {
+		return uiDetailTemplate;
+	}
 
-public String getDescribe() {
-	return describe;
-}
+	public void setUiDetailTemplate(String uiDetailTemplate) {
+		this.uiDetailTemplate = uiDetailTemplate;
+	}
 
-public void setDescribe(String describe) {
-	this.describe = describe;
-}
+	public String getUiEditTemplate() {
+		return uiEditTemplate;
+	}
 
-public String getUiNewRecord() {
-	return uiNewRecord;
-}
+	public void setUiEditTemplate(String uiEditTemplate) {
+		this.uiEditTemplate = uiEditTemplate;
+	}
 
-public void setUiNewRecord(String uiNewRecord) {
-	this.uiNewRecord = uiNewRecord;
-}
+	public String getListviews() {
+		return listviews;
+	}
 
-public String getSobject() {
-	return sobject;
-}
+	public void setListviews(String listviews) {
+		this.listviews = listviews;
+	}
 
-public void setSobject(String sobject) {
-	this.sobject = sobject;
-}
+	public String getDescribe() {
+		return describe;
+	}
 
-private String sobject;
+	public void setDescribe(String describe) {
+		this.describe = describe;
+	}
 
+	public String getUiNewRecord() {
+		return uiNewRecord;
+	}
 
+	public void setUiNewRecord(String uiNewRecord) {
+		this.uiNewRecord = uiNewRecord;
+	}
 
-public String getCompactLayouts() {
-	return compactLayouts;
-}
+	public String getSobject() {
+		return sobject;
+	}
 
-public void setCompactLayouts(String compactLayouts) {
-	this.compactLayouts = compactLayouts;
-}
+	public void setSobject(String sobject) {
+		this.sobject = sobject;
+	}
 
-public String getLayout ()
-{
-return layout;
-}
+	private String sobject;
 
-public void setLayout (String layout)
-{
-this.layout = layout;
-}
+	public String getCompactLayouts() {
+		return compactLayouts;
+	}
 
-@Override
-public String toString()
-{
-return "ClassPojo [layout = "+layout+"]";
-}
+	public void setCompactLayouts(String compactLayouts) {
+		this.compactLayouts = compactLayouts;
+	}
+
+	public String getLayout() {
+		return layout;
+	}
+
+	public void setLayout(String layout) {
+		this.layout = layout;
+	}
+
+	@Override
+	public String toString() {
+		return "ClassPojo [layout = " + layout + "]";
+	}
 }

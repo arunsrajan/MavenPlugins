@@ -4,6 +4,7 @@ package org.singam.maven.plugin;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -31,6 +33,8 @@ import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.singam.maven.plugin.sobjects.SalesforceObjects;
+import org.singam.maven.plugin.sobjects.Sobjects;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -62,7 +66,7 @@ public class CamelSalesforceDTOMojo
     @Parameter(required = true)
     private String salesforcePassword;
     
-    @Parameter(required = true)
+    @Parameter
     private List<String> sObjects;
     
     @Parameter(defaultValue="v33.0")
@@ -124,7 +128,7 @@ public class CamelSalesforceDTOMojo
   	    	try {
 				FileOutputStream fout = new FileOutputStream(new File(javaPackagePath.getAbsolutePath()+"/"+sObject.getName()+".java"));
 				fout.write(sw.getBuffer().toString().getBytes());
-				fout.close();
+				fout.close(); 
 				if(sObject.getFields()!=null) {
 					List<Fields> fields = Arrays.asList(sObject.getFields());
 					fields.stream().filter(field->field.getType().equals("picklist")).forEach(field->{
@@ -209,11 +213,15 @@ public class CamelSalesforceDTOMojo
     }
     
     protected List<SalesforceObjectMetadata> generate(String accessToken) throws Exception {
-    	List<SalesforceObjectMetadata> salesforceObjects = new ArrayList<>();
+    	List<SalesforceObjectMetadata> salesforceObjectList = new ArrayList<>();
     	try {
-    		
-    		for(String sObjectName:sObjects) {
-		    	String restUrlGetMetadata = salesforceLoginUrl + "/services/data/"+salesforceApiVersion+"/sobjects/"+sObjectName+"/describe";
+    		if(sObjects!=null && sObjects.size()>0) {
+	    		for(String sObjectName:sObjects) {
+	    			getSObject(accessToken,sObjectName,salesforceObjectList);
+	    		}
+    		}
+    		else {
+    			String restUrlGetMetadata = salesforceLoginUrl + "/services/data/"+salesforceApiVersion+"/sobjects";
 		    	System.out.println("Generating Salesforce Object for the URL: "+restUrlGetMetadata);
 		    	GetMethod get = new GetMethod(restUrlGetMetadata);
 				get.addRequestHeader("Authorization","Bearer "+ accessToken);
@@ -222,16 +230,40 @@ public class CamelSalesforceDTOMojo
 				JSONObject authResponse = new JSONObject(
 						new JSONTokener(new InputStreamReader(get.getResponseBodyAsStream())));
 				ObjectMapper objMapper = new ObjectMapper();
-				SalesforceObjectMetadata sObject=(SalesforceObjectMetadata) objMapper.readValue(authResponse.toString(), SalesforceObjectMetadata.class);
-				salesforceObjects.add(sObject);
+				SalesforceObjects salesforceObjects=(SalesforceObjects)objMapper.readValue(authResponse.toString(), SalesforceObjects.class);
+				List<Sobjects> salesforceobjects = Arrays.asList(salesforceObjects.getSobjects());
+				salesforceobjects.stream().forEach(sObject->{
+					try {
+						getSObject(accessToken,sObject.getName(),salesforceObjectList);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				});
+				
     		}
     	}
     	catch(Exception ex) {
+    		ex.printStackTrace();
     		throw new MojoExecutionException("Exception in generating salesforce DTO objects. Please check below the cause.\n\n",ex);
     	}
     	finally {
-    		return salesforceObjects;
+    		return salesforceObjectList;
     	}
     }
+    
+    public void getSObject(String accessToken,String sObjectName,List<SalesforceObjectMetadata> salesforceObjects) throws Exception{
+    	String restUrlGetMetadata = salesforceLoginUrl + "/services/data/"+salesforceApiVersion+"/sobjects/"+sObjectName+"/describe";
+    	System.out.println("Generating Salesforce Object for the URL: "+restUrlGetMetadata);
+    	GetMethod get = new GetMethod(restUrlGetMetadata);
+		get.addRequestHeader("Authorization","Bearer "+ accessToken);
+		HttpClient httpclient = new HttpClient();
+		httpclient.executeMethod(get);
+		JSONObject authResponse = new JSONObject(
+				new JSONTokener(new InputStreamReader(get.getResponseBodyAsStream())));
+		ObjectMapper objMapper = new ObjectMapper();
+		SalesforceObjectMetadata sObject=(SalesforceObjectMetadata) objMapper.readValue(authResponse.toString(), SalesforceObjectMetadata.class);
+		salesforceObjects.add(sObject);
+    }
+    
     
 }

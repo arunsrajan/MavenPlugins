@@ -1,6 +1,6 @@
 package org.singam.maven.plugin;
 
-
+import java.util.List;
 
 public class SalesforceObjectMetadata
 {
@@ -32,7 +32,7 @@ public class SalesforceObjectMetadata
 
     private String custom;
 
-    private String[] namedLayoutInfos;
+    private NamedLayoutInfos[] namedLayoutInfos;
 
     private ChildRelationships[] childRelationships;
 
@@ -206,12 +206,12 @@ public class SalesforceObjectMetadata
         this.custom = custom;
     }
 
-    public String[] getNamedLayoutInfos ()
+    public NamedLayoutInfos[] getNamedLayoutInfos ()
     {
         return namedLayoutInfos;
     }
 
-    public void setNamedLayoutInfos (String[] namedLayoutInfos)
+    public void setNamedLayoutInfos (NamedLayoutInfos[] namedLayoutInfos)
     {
         this.namedLayoutInfos = namedLayoutInfos;
     }

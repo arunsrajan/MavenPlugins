@@ -13,9 +13,9 @@ public enum $className {
 				#set($fieldName = $pickListValue.getValue().replaceAll(" ","_").replaceAll("[^A-Za-z0-9]","_"))
 				#set($fieldName = $fieldName.toUpperCase())
 				#if($foreach.count < $size)
-					$fieldName ("$pickListValue.getValue()"),
+					_$fieldName ("$pickListValue.getValue()"),
 				#else
-					$fieldName ("$pickListValue.getValue()");				
+					_$fieldName ("$pickListValue.getValue()");				
 				#end
 			#end
 		#end
