@@ -60,7 +60,7 @@ public class Fields
 
     private String calculatedFormula;
 
-    private Object[] picklistValues;
+    private PicklistValues[] picklistValues;
 
     private String writeRequiresMasterRead;
 
@@ -394,12 +394,12 @@ public class Fields
         this.calculatedFormula = calculatedFormula;
     }
 
-    public Object[] getPicklistValues ()
+    public PicklistValues[] getPicklistValues ()
     {
         return picklistValues;
     }
 
-    public void setPicklistValues (Object[] picklistValues)
+    public void setPicklistValues (PicklistValues[] picklistValues)
     {
         this.picklistValues = picklistValues;
     }

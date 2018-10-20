@@ -3,7 +3,11 @@ package $packageName;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Generated;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamConverter;
+import org.apache.camel.component.salesforce.api.PicklistEnumConverter;
+import org.apache.camel.component.salesforce.api.dto.AbstractSObjectBase;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 @Generated("org.apache.camel.maven.CamelSalesforceMojo")
 @XStreamAlias("$name")
@@ -14,12 +18,35 @@ public class $name extends AbstractDescribedSObjectBase {
 			#set($the_rest = $fieldName.substring(1))
 			#set($fieldName = ${first_letter} + ${the_rest})
 			#set($setterGetter = $first_letter.toUpperCase() + ${the_rest})
-			private String $fieldName;
+			#if( $field.getType() == "double" )
+				#set($type = "java.lang.Double")
+			#elseif($field.getType() == "string" || $field.getType() == "textarea")
+				#set($type = "java.lang.String")
+			#elseif($field.getType() == "picklist")
+				#if ($setterGetter.endsWith("__c"))
+					#set($type = $setterGetter.replace("__c","")+"CustomEnum")
+				#else
+					#set($type = $setterGetter+"Enum")
+				#end
+			#else
+				#set($type = "java.lang.String")
+			#end
 			
-			public String get$setterGetter(){
-				return $field.getName();
+			#if($field.getType() == "picklist")
+			@XStreamConverter(PicklistEnumConverter.class)
+			private $type $fieldName;
+			#else
+			private $type $fieldName;
+			#end
+			
+			
+			@JsonProperty("$field.getName()")
+			public $type get$setterGetter(){
+				return $fieldName;
 			}
-			public String set$setterGetter(String $fieldName){
+			
+			@JsonProperty("$field.getName()")
+			public void set$setterGetter($type $fieldName){
 				this.$fieldName=$fieldName;
 			} 
 		#end

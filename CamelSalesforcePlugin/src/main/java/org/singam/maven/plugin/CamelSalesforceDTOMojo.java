@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.httpclient.HttpClient;
@@ -110,16 +111,41 @@ public class CamelSalesforceDTOMojo
     		velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath"); 
     		velocityEngine.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
     		final Template template = velocityEngine.getTemplate("/sObject-Gen.vm");
+    		final Template enumTemplate = velocityEngine.getTemplate("/sObject-EnumGen.vm");
     		StringWriter sw = new StringWriter();
       		sObjects.stream().forEach(sObject->{
   	    	VelocityContext context = new VelocityContext();
   	    	context.put( "name", sObject.getName() );
   	    	context.put("fields",sObject.getFields());
+  	    	context.put("packageName",javaPackage);
   	    	template.merge( context, sw );
   	    	try {
 				FileOutputStream fout = new FileOutputStream(new File(javaPackagePath.getAbsolutePath()+"/"+sObject.getName()+".java"));
 				fout.write(sw.getBuffer().toString().getBytes());
 				fout.close();
+				if(sObject.getFields()!=null) {
+					List<Fields> fields = Arrays.asList(sObject.getFields());
+					fields.stream().filter(field->field.getType().equals("picklist")).forEach(field->{
+						try {
+							VelocityContext velCtx = new VelocityContext();
+							velCtx.put( "name", field.getName() );
+							velCtx.put("pickListValues",field.getPicklistValues());
+							velCtx.put("packageName",javaPackage);
+							long size = field.getPicklistValues().length;
+							velCtx.put("size",size);
+							StringWriter enumFileGenerator = new StringWriter();
+							enumTemplate.merge(velCtx, enumFileGenerator);
+							String name=field.getName();
+							name = name.endsWith("__c")?name.replace("__c", "")+"Custom":name;
+							FileOutputStream enumFile = new FileOutputStream(new File(javaPackagePath.getAbsolutePath()+"/"+name+"Enum.java"));
+							enumFile.write(enumFileGenerator.getBuffer().toString().getBytes());
+							enumFile.close();
+						}
+						catch(Exception ex) {
+							ex.printStackTrace();
+						}
+					});
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
