@@ -23,6 +23,8 @@ public class $name extends AbstractSObjectBase {
 				#set($type = "java.time.ZonedDateTime")
 			#elseif( $field.getType() == "double" )
 				#set($type = "java.lang.Double")
+			#elseif( $field.getType() == "address" )
+				#set($type = "org.apache.camel.component.salesforce.api.dto.Address")
 			#elseif( $field.getType() == "datetime" )
 				#set($type = "java.time.ZonedDateTime")
 			#elseif( $field.getType() == "date" )
