@@ -113,6 +113,8 @@ public class CamelSalesforceDTOMojo extends AbstractMojo {
 			velocityEngine.setProperty("classpath.resource.loader.class", ClasspathResourceLoader.class.getName());
 			final Template template = velocityEngine.getTemplate("/sObject-Gen.vm");
 			final Template enumTemplate = velocityEngine.getTemplate("/sObject-EnumGen.vm");
+			final Template recordsSObjectTemplate = velocityEngine.getTemplate("/sRecordObjects-Gen.vm");
+			
 
 			sObjects.stream().forEach(sObject -> {
 				VelocityContext context = new VelocityContext();
@@ -153,6 +155,20 @@ public class CamelSalesforceDTOMojo extends AbstractMojo {
 												+ "Enum.java"));
 								enumFile.write(enumFileGenerator.getBuffer().toString().getBytes());
 								enumFile.close();
+								
+								
+								velCtx = new VelocityContext();
+								velCtx.put("sObjectName", objectName);
+								velCtx.put("packageName", javaPackage);
+								velCtx.put("recordName", "Records_" +objectName);
+								StringWriter recordsFileGenerator = new StringWriter();
+								recordsSObjectTemplate.merge(velCtx, recordsFileGenerator);
+								
+								
+								FileOutputStream recordsQuerySObjectFile = new FileOutputStream(
+										new File(javaPackagePath.getAbsolutePath() + "/Records_" + objectName + ".java"));
+								recordsQuerySObjectFile.write(recordsFileGenerator.getBuffer().toString().getBytes());
+								recordsQuerySObjectFile.close();
 							} catch (Exception ex) {
 								ex.printStackTrace();
 							}
