@@ -12,6 +12,23 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
+import org.eclipse.aether.deployment.DeployRequest;
+import org.eclipse.aether.impl.DefaultServiceLocator;
+import org.eclipse.aether.repository.Authentication;
+import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
+import org.eclipse.aether.spi.connector.transport.TransporterFactory;
+import org.eclipse.aether.transport.file.FileTransporterFactory;
+import org.eclipse.aether.transport.http.HttpTransporterFactory;
+import org.eclipse.aether.util.repository.AuthenticationBuilder;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
@@ -32,6 +49,8 @@ public class FuseDeployMojo extends AbstractMojo {
 	public static final String m2RepoNative=File.separator+".m2"+File.separator+"repository"+File.separator;
 
 	public static final String m2RepoSSHConsole = "/.m2/repository/";
+	
+	public static final String PERIOD = ".";
 	
 	@Parameter(name = "buildDirectory", defaultValue = "${project.build.directory}", required = true)
 	private String buildDirectory;
@@ -87,6 +106,19 @@ public class FuseDeployMojo extends AbstractMojo {
 	@Parameter(name = "deploymentMode", defaultValue = "SSH", required = true)
 	private String deploymentMode;
 
+	@Parameter(name = "mavenRepoId", required = true)
+	private String mavenRepoId;
+	
+	@Parameter(name = "mavenRepoServerUrl", required = true)
+	private String mavenRepoServerUrl;
+
+	@Parameter(name = "mavenRepoUsername", required = true)
+	private String mavenRepoUsername;
+	
+	@Parameter(name = "mavenRepoPassword", required = true)
+	private String mavenRepoPassword;
+	
+	
 	public void execute() throws MojoExecutionException {
 		try {
 			JSch jsch = new JSch();
@@ -113,6 +145,13 @@ public class FuseDeployMojo extends AbstractMojo {
 
 				log.info(sendCommand(session, "install -s mvn:" + groupId + FILESEPARATOR + artifactId + FILESEPARATOR + version + "\n"));
 			}
+			else if (deploymentMode.equals("MAVEN")) {
+				uploadArtifactsMavenRepo();
+				
+				sendCommand(session, "uninstall \"" + bundleSymbolicName + "\"\n");
+
+				log.info(sendCommand(session, "install -s mvn:" + groupId + FILESEPARATOR + artifactId + FILESEPARATOR + version + "\n"));
+			}
 			session.disconnect();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -121,6 +160,59 @@ public class FuseDeployMojo extends AbstractMojo {
 		}
 	}
 
+	public void uploadArtifactsMavenRepo() throws MojoExecutionException {
+		try {
+			RepositorySystem system = newRepositorySystem();
+		    RepositorySystemSession session = newSession(system);
+	
+		    
+	
+		    Authentication authentication = new AuthenticationBuilder().addUsername(mavenRepoUsername).addPassword(mavenRepoPassword).build();
+	
+		    // creates a remote repo at the given URL to deploy to
+		    RemoteRepository distRepo = new RemoteRepository.Builder(mavenRepoId, "default",mavenRepoServerUrl).setAuthentication(authentication).build();
+		    for (String deploymentArtifact : deploymentArtifacts) {
+		    	deployArtifactToMaven(deploymentArtifact,system,session,distRepo,"jar");
+		    	deployArtifactToMaven(deploymentArtifact,system,session,distRepo,"pom");
+		    }
+		}
+		catch(Exception ex) {
+			throw new MojoExecutionException("Error deploying file ", ex);
+		}
+	}
+	
+	
+	public void deployArtifactToMaven(String deploymentArtifact,RepositorySystem system,RepositorySystemSession session,RemoteRepository distRepo,String extn) throws MojoExecutionException {
+		try {
+			Artifact artifact = new DefaultArtifact(groupId, artifactId, "", extn, version);
+		    artifact = artifact.setFile(new File(currentLoginUserHome + m2RepoNative
+					+ groupId.replace(".", File.separator) + File.separator + deploymentArtifact.replace(".", File.separator) + File.separator + version
+					+ File.separator + deploymentArtifact + "-" + version + PERIOD + extn));
+		    DeployRequest deployRequest = new DeployRequest();
+		    deployRequest.addArtifact(artifact);
+		    deployRequest.setRepository(distRepo);
+	
+		    system.deploy(session, deployRequest);
+		}
+		catch(Exception ex) {
+			throw new MojoExecutionException("Error deploying file ", ex);
+		}
+	}
+	
+	private RepositorySystem newRepositorySystem() {
+	    DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
+	    locator.addService(RepositoryConnectorFactory.class, BasicRepositoryConnectorFactory.class);
+	    locator.addService(TransporterFactory.class, FileTransporterFactory.class);
+	    locator.addService(TransporterFactory.class, HttpTransporterFactory.class);
+	    return locator.getService(RepositorySystem.class);
+	}
+
+	private RepositorySystemSession newSession(RepositorySystem system) {
+	    DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
+	    LocalRepository localRepo = new LocalRepository(currentLoginUserHome + m2RepoNative);
+	    session.setLocalRepositoryManager(system.newLocalRepositoryManager(session, localRepo));
+	    return session;
+	}
 	public void uploadFiles() throws MojoExecutionException {
 		Channel channel;
 		try {
