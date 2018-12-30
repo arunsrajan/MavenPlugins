@@ -49,11 +49,11 @@ The maven goal to generate the Salesforce to Java Objects is salesforcedtogen:ge
 
 Fuse Deploy plugin
 ------------------
-The Fuse deploy plugin deploys the generated artifacts to the redhat fuse server in three modes. The modes are
+The Fuse deploy plugin deploys the generated artifacts to the redhat fuse server in three modes. The modes are <BR/>
 
-SFTP - Directly upload the artifacts in to the deploy directory of redhat fuse server.
-SSH - Upload the jar and pom in User directory .m2 folder and uninstall and install the artifacts in redhat fuse server.
-MAVEN - Upload the artifacts in to the maven repository and uninstall and install the artifacts in redhat fuse server.
+SFTP - Directly upload the artifacts in to the deploy directory of redhat fuse server. <BR/>
+SSH - Upload the jar and pom in User directory .m2 folder and uninstall and install the artifacts in redhat fuse server. <BR/>
+MAVEN - Upload the artifacts in to the maven repository and uninstall and install the artifacts in redhat fuse server. <BR/>
 
 The input parameters to deploy plugin is 
 
